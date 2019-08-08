@@ -26,14 +26,13 @@ import javax.persistence.Persistence;
 public class JPAProductRepositoryImpl implements ProductRepository {
     private static final String PERSISTENCE_UNIT = "A1-commonPU";//what's the function of this field?
     private EntityManagerFactory entityManagerFactory;
-    private EntityManager entityManager;
 
     public JPAProductRepositoryImpl() {
         this.entityManagerFactory = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT);
-        this.entityManager = this.entityManagerFactory.createEntityManager();//Can it be an property？ or need to be create in every function？
     }
     @Override
     public void addProduct(Product product) throws  Exception {
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
@@ -57,6 +56,7 @@ public class JPAProductRepositoryImpl implements ProductRepository {
     }
     @Override
     public void removeProductById(int id) throws Exception {
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
@@ -86,6 +86,7 @@ public class JPAProductRepositoryImpl implements ProductRepository {
     
     @Override
     public void updateProduct(Product product) throws Exception {
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
@@ -113,7 +114,8 @@ public class JPAProductRepositoryImpl implements ProductRepository {
     }
     
      @Override
-    public Product searchProductById(int id) throws Exception {       
+    public Product searchProductById(int id) throws Exception {  
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         try {
             return entityManager.find(Product.class, id);
         } finally {
@@ -123,7 +125,8 @@ public class JPAProductRepositoryImpl implements ProductRepository {
     
    @Override
     public List<Product> getAllProducts() throws Exception {
-        return this.entityManager.createNamedQuery("Product.findAll").getResultList();
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
+        return entityManager.createNamedQuery("Product.findAll").getResultList();
     }
 
 

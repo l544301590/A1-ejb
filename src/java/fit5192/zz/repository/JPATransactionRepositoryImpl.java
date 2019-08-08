@@ -5,22 +5,17 @@
  */
 package fit5192.zz.repository;
 
-import fit5192.zz.repository.TransactionRepository;
 import fit5192.zz.repository.exceptions.NonexistentEntityException;
 import fit5192.zz.repository.exceptions.PreexistingEntityException;
 import fit5192.zz.repository.exceptions.RollbackFailureException;
 import fit5192.zz.repository.entities.Transaction_;
-import java.io.Serializable;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 
 /**
  *
@@ -31,14 +26,13 @@ public class JPATransactionRepositoryImpl implements TransactionRepository {
 
     private static final String PERSISTENCE_UNIT = "A1-commonPU";//what's the function of this field?
     private EntityManagerFactory entityManagerFactory;
-    private EntityManager entityManager;
 
     public JPATransactionRepositoryImpl() {
         this.entityManagerFactory = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT);
-        this.entityManager = this.entityManagerFactory.createEntityManager();//Can it be an property？ or need to be create in every function？
     }
     @Override
     public void addTransaction(Transaction_ tran) throws  Exception {
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
@@ -62,6 +56,7 @@ public class JPATransactionRepositoryImpl implements TransactionRepository {
     }
      @Override
     public void removeTransactionById(int id) throws Exception {
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
@@ -91,6 +86,7 @@ public class JPATransactionRepositoryImpl implements TransactionRepository {
     
     @Override
     public void updateTransaction(Transaction_ tran) throws Exception {
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
@@ -118,7 +114,8 @@ public class JPATransactionRepositoryImpl implements TransactionRepository {
     }
     
     @Override
-    public Transaction_ searchTransactionById(int id) throws Exception {       
+    public Transaction_ searchTransactionById(int id) throws Exception {  
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         try {
             return entityManager.find(Transaction_.class, id);
         } finally {
@@ -128,7 +125,8 @@ public class JPATransactionRepositoryImpl implements TransactionRepository {
     
     @Override
     public List<Transaction_> getAllTransactions() throws Exception {
-        return this.entityManager.createNamedQuery("Transaction.findAll").getResultList();
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
+        return entityManager.createNamedQuery("Transaction.findAll").getResultList();
     }
 
 /*

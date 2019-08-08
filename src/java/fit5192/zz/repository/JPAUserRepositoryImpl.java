@@ -31,14 +31,14 @@ import javax.transaction.UserTransaction;
 public class JPAUserRepositoryImpl implements UserRepository {
     private static final String PERSISTENCE_UNIT = "A1-commonPU";//what's the function of this field?
     private EntityManagerFactory entityManagerFactory;
-    private EntityManager entityManager;
 
     public JPAUserRepositoryImpl() {
         this.entityManagerFactory = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT);
-        this.entityManager = this.entityManagerFactory.createEntityManager();//Can it be an property？ or need to be create in every function？
     }
+    
     @Override
     public void addUser(User_ user) throws  Exception {
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
@@ -62,6 +62,7 @@ public class JPAUserRepositoryImpl implements UserRepository {
     }
      @Override
     public void removeUserById(int id) throws Exception {
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
@@ -91,6 +92,7 @@ public class JPAUserRepositoryImpl implements UserRepository {
     
     @Override
     public void updateUser(User_ user) throws Exception {
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
@@ -118,7 +120,8 @@ public class JPAUserRepositoryImpl implements UserRepository {
     }
     
      @Override
-    public User_ searchUserById(int id) throws Exception {       
+    public User_ searchUserById(int id) throws Exception {    
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         try {
             return entityManager.find(User_.class, id);
         } finally {
@@ -127,14 +130,16 @@ public class JPAUserRepositoryImpl implements UserRepository {
     }
     //for register
     public List<User_> searchUserByEmail(String email){
-        Query query = this.entityManager.createNamedQuery("User_.searchUserByEmail");
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
+        Query query = entityManager.createNamedQuery("User_.searchUserByEmail");
         System.out.println(query.toString());
         query.setParameter("email", email);
         return query.getResultList();
     }
     @Override
     public List<User_> getAllUsers() throws Exception {
-        return this.entityManager.createNamedQuery("User_.findAll").getResultList();
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
+        return entityManager.createNamedQuery("User_.findAll").getResultList();
     }
 
 /*

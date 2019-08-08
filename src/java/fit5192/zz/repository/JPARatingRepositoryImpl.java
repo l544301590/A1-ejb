@@ -31,14 +31,13 @@ public class JPARatingRepositoryImpl implements RatingRepository {
 
     private static final String PERSISTENCE_UNIT = "A1-commonPU";//what's the function of this field?
     private EntityManagerFactory entityManagerFactory;
-    private EntityManager entityManager;
 
     public JPARatingRepositoryImpl() {
         this.entityManagerFactory = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT);
-        this.entityManager = this.entityManagerFactory.createEntityManager();//Can it be an property？ or need to be create in every function？
     }
     @Override
     public void addRating(Rating rating) throws  Exception {
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
@@ -62,6 +61,7 @@ public class JPARatingRepositoryImpl implements RatingRepository {
     }
      @Override
     public void removeRatingById(int id) throws Exception {
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
@@ -91,6 +91,7 @@ public class JPARatingRepositoryImpl implements RatingRepository {
     
     @Override
     public void updateRating(Rating rating) throws Exception {
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
@@ -118,7 +119,8 @@ public class JPARatingRepositoryImpl implements RatingRepository {
     }
     
      @Override
-    public Rating searchRatingById(int id) throws Exception {       
+    public Rating searchRatingById(int id) throws Exception {      
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         try {
             return entityManager.find(Rating.class, id);
         } finally {
@@ -128,7 +130,8 @@ public class JPARatingRepositoryImpl implements RatingRepository {
     
      @Override
     public List<Rating> getAllRating() throws Exception {
-        return this.entityManager.createNamedQuery("Rating.findAll").getResultList();
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
+        return entityManager.createNamedQuery("Rating.findAll").getResultList();
     }
     /*
     public List<Rating> searchRatings() {
