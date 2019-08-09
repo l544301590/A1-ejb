@@ -19,9 +19,6 @@ import javax.persistence.EntityNotFoundException;
 import javax.persistence.EntityTransaction;
 import javax.persistence.NamedQuery;
 import javax.persistence.Persistence;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
-import javax.transaction.UserTransaction;
 
 /**
  *
@@ -60,7 +57,7 @@ public class JPAUserRepositoryImpl implements UserRepository {
             }
         }
     }
-     @Override
+    @Override
     public void removeUserById(int id) throws Exception {
         EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         EntityTransaction transaction = entityManager.getTransaction();
@@ -88,7 +85,6 @@ public class JPAUserRepositoryImpl implements UserRepository {
             }
         }
     }
-    
     
     @Override
     public void updateUser(User_ user) throws Exception {
@@ -119,7 +115,7 @@ public class JPAUserRepositoryImpl implements UserRepository {
         }
     }
     
-     @Override
+    @Override
     public User_ searchUserById(int id) throws Exception {    
         EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         try {
@@ -128,14 +124,16 @@ public class JPAUserRepositoryImpl implements UserRepository {
             entityManager.close();
         }
     }
+    
     //for register
+    @Override
     public List<User_> searchUserByEmail(String email){
         EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         Query query = entityManager.createNamedQuery("User_.searchUserByEmail");
-        System.out.println(query.toString());
         query.setParameter("email", email);
         return query.getResultList();
     }
+    
     @Override
     public List<User_> getAllUsers() throws Exception {
         EntityManager entityManager = this.entityManagerFactory.createEntityManager();
