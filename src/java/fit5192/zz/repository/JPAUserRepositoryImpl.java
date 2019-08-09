@@ -10,8 +10,14 @@ import fit5192.zz.repository.exceptions.NonexistentEntityException;
 import fit5192.zz.repository.exceptions.PreexistingEntityException;
 import fit5192.zz.repository.exceptions.RollbackFailureException;
 import fit5192.zz.repository.entities.User_;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.ejb.Singleton;
 import javax.ejb.Stateless;
+import javax.enterprise.context.SessionScoped;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
@@ -19,6 +25,11 @@ import javax.persistence.EntityNotFoundException;
 import javax.persistence.EntityTransaction;
 import javax.persistence.NamedQuery;
 import javax.persistence.Persistence;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 /**
  *
@@ -125,8 +136,8 @@ public class JPAUserRepositoryImpl implements UserRepository {
         }
     }
     
-    //for register
-    @Override
+    //for register login
+    @SessionScoped//登陆注册之后  sessionscope 存入的是输入还是输出？
     public List<User_> searchUserByEmail(String email){
         EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         Query query = entityManager.createNamedQuery("User_.searchUserByEmail");
@@ -134,12 +145,106 @@ public class JPAUserRepositoryImpl implements UserRepository {
         return query.getResultList();
     }
     
+    
     @Override
     public List<User_> getAllUsers() throws Exception {
         EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         return entityManager.createNamedQuery("User_.findAll").getResultList();
     }
-
+    @Override
+    public String register(User_ user) {
+        //even if the database require the email to be unique, Early inspection can make problems detected earlier
+        List<User_> users = searchUserByEmail(user.getEmail());
+        if(users.size() > 0){
+            return "This email has been registered";
+        }            //some orher exception can be happen(else if)
+        try {
+            addUser(user);
+        } catch (Exception ex) {
+            ex.toString();
+        }
+        return String.valueOf( user.getLevel());
+    }
+    
+    @Override
+    @SessionScoped
+    public String login(User_ user) {
+        List<User_> users=searchUserByEmail(user.getEmail());
+        if(users.get(0).getPassword()!=user.getPassword()){
+            return "wrong password,try again";
+        } //some orher exception can be happen( can add else if)
+        return String.valueOf( users.get(0).getLevel());
+    }
+    
+    @Override
+    public List<User_> SerachUserByAnyAttribute(User_ user) {
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
+        int id = user.getId();
+        String email = user.getEmail(); 
+        String nickname = user.getNickname(); 
+        String password = user.getPassword(); 
+        int level = user.getLevel();
+        String lastName = user.getLastName();
+        String firstName = user.getFirstName(); 
+        String address = user.getAddress(); 
+        String phone = user.getPhone();
+        HashMap<String,Object> constraint=new HashMap<>();
+        if(id!=0){
+            constraint.put("id",id );
+        }
+        if(!isEmpty(email)){
+            constraint.put("email",email );
+        }
+        if(!isEmpty(nickname)){
+            constraint.put("nickname",nickname );
+        }
+        if(!isEmpty(password)){
+            constraint.put("password",password );
+        }
+         if(level!=0){
+            constraint.put("level",level );
+        }
+        if(!isEmpty(lastName)){
+            constraint.put("lastName",lastName );
+        }
+        if(!isEmpty(firstName)){
+            constraint.put("firstName",firstName );
+        }
+        if(!isEmpty(address)){
+            constraint.put("address",address );
+        }
+        if(!isEmpty(phone)){
+            constraint.put("phone",phone );
+        }
+        
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<User_> query = criteriaBuilder.createQuery(User_.class);
+        Root<User_> studentProfile = query.from(User_.class);
+        List<Predicate> predicatesList = new ArrayList<>();
+        
+        for(Object key : constraint.keySet()) {
+            String attr = (String)key;
+            Object value = constraint.get(attr);
+            predicatesList.add(criteriaBuilder.equal(studentProfile.get(attr), value));
+        }
+        query.where(predicatesList.toArray(new Predicate[predicatesList.size()]));
+        TypedQuery<User_> q = entityManager.createQuery(query);
+        
+        return  q.getResultList();
+    }
+        
+    public static boolean isEmpty(String str) {
+    int strLen;
+    if (str == null || (strLen = str.length()) == 0||str==" ") {
+        return true;
+    }
+    for (int i = 0; i < strLen; i++) {
+        if ((Character.isWhitespace(str.charAt(i)) == false)) {
+            return false;
+        }
+    }
+    return true;
+    }
 /*
     public List<User> findUserEntities(int maxResults, int firstResult) {
         return findUserEntities(false, maxResults, firstResult);
@@ -174,4 +279,6 @@ public class JPAUserRepositoryImpl implements UserRepository {
         }
     }
 */
+
+   
 }
