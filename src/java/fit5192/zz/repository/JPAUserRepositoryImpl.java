@@ -219,13 +219,13 @@ public class JPAUserRepositoryImpl implements UserRepository {
         
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<User_> query = criteriaBuilder.createQuery(User_.class);
-        Root<User_> studentProfile = query.from(User_.class);
+        Root<User_> resultUsers = query.from(User_.class);
         List<Predicate> predicatesList = new ArrayList<>();
         
         for(Object key : constraint.keySet()) {
             String attr = (String)key;
             Object value = constraint.get(attr);
-            predicatesList.add(criteriaBuilder.equal(studentProfile.get(attr), value));
+            predicatesList.add(criteriaBuilder.equal(resultUsers.get(attr), value));
         }
         query.where(predicatesList.toArray(new Predicate[predicatesList.size()]));
         TypedQuery<User_> q = entityManager.createQuery(query);
