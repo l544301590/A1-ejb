@@ -136,8 +136,7 @@ public class JPAUserRepositoryImpl implements UserRepository {
         }
     }
     
-    //for register login
-    @SessionScoped//登陆注册之后  sessionscope 存入的是输入还是输出？
+    @Override
     public List<User_> searchUserByEmail(String email){
         EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         Query query = entityManager.createNamedQuery("User_.searchUserByEmail");
