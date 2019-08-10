@@ -167,10 +167,9 @@ public class JPAUserRepositoryImpl implements UserRepository {
     }
     
     @Override
-    @SessionScoped
     public String login(User_ user) {
         List<User_> users=searchUserByEmail(user.getEmail());
-        if(users.get(0).getPassword()!=user.getPassword()){
+        if(!users.get(0).getPassword().equals(user.getPassword())){
             return "wrong password,try again";
         } //some orher exception can be happen( can add else if)
         return String.valueOf( users.get(0).getLevel());
