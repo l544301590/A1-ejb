@@ -10,13 +10,22 @@ import fit5192.zz.repository.exceptions.NonexistentEntityException;
 import fit5192.zz.repository.exceptions.PreexistingEntityException;
 import fit5192.zz.repository.exceptions.RollbackFailureException;
 import fit5192.zz.repository.entities.Product;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 /**
  *
@@ -24,6 +33,7 @@ import javax.persistence.Persistence;
  */
 @Stateless
 public class JPAProductRepositoryImpl implements ProductRepository {
+    
     private static final String PERSISTENCE_UNIT = "A1-commonPU";//what's the function of this field?
     private EntityManagerFactory entityManagerFactory;
 
@@ -113,7 +123,7 @@ public class JPAProductRepositoryImpl implements ProductRepository {
         }
     }
     
-     @Override
+    @Override
     public Product searchProductById(int id) throws Exception {  
         EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         try {
@@ -128,8 +138,116 @@ public class JPAProductRepositoryImpl implements ProductRepository {
         EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         return entityManager.createNamedQuery("Product.findAll").getResultList();
     }
-
-
+    @Override
+    public List<Product> searchProductByAnyAttribute(Product product) {
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
+        StringBuilder query=new StringBuilder("SELECT p FROM product p WHERE 1");
+        if(product.getId()!=0){
+            query.append("AND p.id=:id");
+        }
+        if(isEmpty(product.getName())){
+            query.append("AND p.name=:name");
+        }
+        if(product.getCategory()!=0){
+            query.append("AND p.category=:category");
+        }
+        if(isEmpty(product.getArea())){
+            query.append("AND p.area=:area");
+        }
+        if(product.getPrice()!=0){
+            query.append("AND p.price<:price");
+        }
+        String orderQuery = "SELECT AVG(s.value) FROM Rating r WHERE r.product=p DESC";//这里的r.product=p 感觉不太对啊
+        String finalQuery = query.toString()+"ORDER BY"+orderQuery;
+        TypedQuery<Product> q = entityManager.createQuery(finalQuery, Product.class);         
+        q.setParameter("id", product.getId());
+        q.setParameter("name", product.getName());
+        q.setParameter("category", product.getCategory());
+        q.setParameter("area", product.getArea());
+        q.setParameter("price", product.getPrice());
+        return q.getResultList();  
+    }
+    public static boolean isEmpty(String str) {
+    int strLen;
+    if (str == null || (strLen = str.length()) == 0||str==" ") {
+        return true;
+    }
+    for (int i = 0; i < strLen; i++) {
+        if ((Character.isWhitespace(str.charAt(i)) == false)) {
+            return false;
+        }
+    }
+    return true;
+    }
+    
+    /*
+    @Override
+    public List<Product> searchProductByAnyAttribute(Product product) {
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
+        int id = product.getId();
+        String name = product.getName();
+        String imgPath = product.getImgPath();
+        int category = product.getCategory();
+        String area = product.getArea();
+        float price = product.getPrice();
+        int inventory = product.getInventory();//存货
+        String description = product.getDescription();
+        HashMap<String,Object> constraint=new HashMap<>();
+        if(id!=0){
+            constraint.put("id",id );
+        }
+        if(!isEmpty(name)){
+            constraint.put("name",name );
+        }
+        if(!isEmpty(imgPath)){
+            constraint.put("imgPath",imgPath );
+        }
+        if(category!=0){
+            constraint.put("category",category );
+        }
+        if(!isEmpty(area)){
+            constraint.put("area",area );
+        }
+        if(price!=0){
+            constraint.put("price",price );
+        }
+        if(inventory!=-1){
+            constraint.put("inventory",price );
+        }
+        if(!isEmpty(description)){
+        //Fuzzy queries may be required. 
+            constraint.put("description",description );
+        }
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Product> query = criteriaBuilder.createQuery(Product.class);
+        Root<Product> resultProducts = query.from(Product.class);
+        List<Predicate> predicatesList = new ArrayList<>();
+        
+        for(Object key : constraint.keySet()) {
+            String attr = (String)key;
+            Object value = constraint.get(attr);
+            predicatesList.add(criteriaBuilder.equal(resultProducts .get(attr), value));
+        }
+        query.where(predicatesList.toArray(new Predicate[predicatesList.size()]));
+        TypedQuery<Product> q = entityManager.createQuery(query);
+        List<Product> disorderProductList=q.getResultList();
+        return disorderProductList;  
+        后面可以用   product.getRating 得到对应的rating 然后计算平均分
+        用HashMap存储，最后对value排序
+    }
+    public static boolean isEmpty(String str) {
+        int strLen;
+        if (str == null || (strLen = str.length()) == 0||str==" ") {
+            return true;
+        }
+        for (int i = 0; i < strLen; i++) {
+            if ((Character.isWhitespace(str.charAt(i)) == false)) {
+                return false;
+            }
+        }
+        return true;
+    }
+*/
 /*
     public List<Product> findProductEntities(int maxResults, int firstResult) {
         return findProductEntities(false, maxResults, firstResult);
@@ -164,4 +282,7 @@ public class JPAProductRepositoryImpl implements ProductRepository {
         }
     }
 */   
+
+
+
 }

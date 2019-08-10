@@ -6,11 +6,15 @@
 package fit5192.zz.repository;
 
 import fit5192.zz.repository.RatingRepository;
+import fit5192.zz.repository.entities.Product;
 import fit5192.zz.repository.exceptions.NonexistentEntityException;
 import fit5192.zz.repository.exceptions.PreexistingEntityException;
 import fit5192.zz.repository.exceptions.RollbackFailureException;
 import fit5192.zz.repository.entities.Rating;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -134,6 +138,25 @@ public class JPARatingRepositoryImpl implements RatingRepository {
         return entityManager.createNamedQuery("Rating.findAll").getResultList();
     }
     /*
+    @Override
+    public Map<Product,Float> getAvgValueOfProduct(Product product) {
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
+        
+        //Assume that the input product is deterministic, so the product found according to the corresponding property should be unique
+        List<Product> productAttribute = productRepository.searchProductByAnyAttribute(product); 
+        Query query = entityManager.createNamedQuery("searchRatingByProduct");
+        query.setParameter("product",productAttribute.get(0) );         
+        List<Rating> ratings = query.getResultList();
+        float valueSum = 0;
+        for(Rating r:ratings){
+            valueSum+=r.getValue();
+        }
+        Float average = valueSum/ratings.size();
+        Map<Product,Float> valueAverage= new HashMap<Product,Float>();
+        valueAverage.put(productAttribute.get(0),  average );
+        return valueAverage;
+    }
+    
     public List<Rating> searchRatings() {
         return findRatingEntities(true, -1, -1);
     }
@@ -175,4 +198,5 @@ public class JPARatingRepositoryImpl implements RatingRepository {
             em.close();
         }
    */   
+
 }
