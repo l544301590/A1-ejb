@@ -169,6 +169,9 @@ public class JPAUserRepositoryImpl implements UserRepository {
     @Override
     public String login(User_ user) {
         List<User_> users=searchUserByEmail(user.getEmail());
+        if(users.size()==0){
+            return "No such account, Re-enter the email";
+        }
         if(!users.get(0).getPassword().equals(user.getPassword())){
             return "wrong password,try again";
         } //some orher exception can be happen( can add else if)
@@ -176,7 +179,7 @@ public class JPAUserRepositoryImpl implements UserRepository {
     }
     
     @Override
-    public List<User_> SerachUserByAnyAttribute(User_ user) {
+    public List<User_> searchUserByAnyAttribute(User_ user) {
         EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         int id = user.getId();
         String email = user.getEmail(); 
