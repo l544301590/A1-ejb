@@ -179,70 +179,7 @@ public class JPAProductRepositoryImpl implements ProductRepository {
         }
     }
     return true;
-    }
-    
-    
-   
-    public List<Product> searchProductByAnyAttribute1(Product product) {
-        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
-        int id = product.getId();
-        String name = product.getName();
-        String imgPath = product.getImgPath();
-        int category = product.getCategory();
-        String area = product.getArea();
-        float price = product.getPrice();
-        int inventory = product.getInventory();//存货
-        String description = product.getDescription();
-        HashMap<String,Object> constraint=new HashMap<>();
-        if(id!=0){
-            constraint.put("id",id );
-        }
-        if(!isEmpty(name)){
-            constraint.put("name",name );
-        }
-        if(!isEmpty(imgPath)){
-            constraint.put("imgPath",imgPath );
-        }
-        if(category!=0){
-            constraint.put("category",category );
-        }
-        if(!isEmpty(area)){
-            constraint.put("area",area );
-        }
-        if(price!=0){
-            constraint.put("price",price );
-        }
-        if(inventory!=-1){
-            constraint.put("inventory",price );
-        }
-        if(!isEmpty(description)){
-        //Fuzzy queries may be required. 
-            constraint.put("description",description );
-        }
-        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Product> query = criteriaBuilder.createQuery(Product.class);
-        Root<Product> products = query.from(Product.class);
-        Subquery<Double> subquery = query.subquery(Double.class);//<>define the returns  entity’s type
-        Root<Rating> ratings = subquery.from(Rating.class);
-        //Join<Project, Employee> sqEmp = project.join(Project_.employees); 为了得到rating.pid=pid 是否需要join
-        subquery.select(criteriaBuilder.avg(ratings.get(Rating_.value)))
-               // .where(criteriaBuilder.equal(ratings.get(Rating_.product),criteriaBuilder.parameter(Product.class,"Product") ));//为什么自动转成了Double类型
-                .where(criteriaBuilder.equal(ratings.get("product"),products))
-        List<Predicate> predicatesList = new ArrayList<>();
-        
-        for(Object key : constraint.keySet()) {
-            String attr = (String)key;
-            Object value = constraint.get(attr);
-            predicatesList.add(criteriaBuilder.equal(resultProducts .get(attr), value));
-        }
-        query.where(predicatesList.toArray(new Predicate[predicatesList.size()]));
-        TypedQuery<Product> q = entityManager.createQuery(query);
-        List<Product> disorderProductList=q.getResultList();
-        return disorderProductList;  
-        //后面可以用   product.getRating 得到对应的rating 然后计算平均分
-        //用HashMap存储，最后对value排序
-    }
-    
+    }  
 /*
     public List<Product> findProductEntities(int maxResults, int firstResult) {
         return findProductEntities(false, maxResults, firstResult);
