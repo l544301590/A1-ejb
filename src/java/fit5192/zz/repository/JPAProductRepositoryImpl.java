@@ -10,11 +10,11 @@ import fit5192.zz.repository.exceptions.NonexistentEntityException;
 import fit5192.zz.repository.exceptions.PreexistingEntityException;
 import fit5192.zz.repository.exceptions.RollbackFailureException;
 import fit5192.zz.repository.entities.Product;
+import fit5192.zz.repository.entities.Rating;
+import fit5192.zz.repository.entities.Rating_;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -26,6 +26,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
 
 /**
  *
@@ -180,9 +181,9 @@ public class JPAProductRepositoryImpl implements ProductRepository {
     return true;
     }
     
-    /*
-    @Override
-    public List<Product> searchProductByAnyAttribute(Product product) {
+    
+   
+    public List<Product> searchProductByAnyAttribute1(Product product) {
         EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         int id = product.getId();
         String name = product.getName();
@@ -220,7 +221,13 @@ public class JPAProductRepositoryImpl implements ProductRepository {
         }
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Product> query = criteriaBuilder.createQuery(Product.class);
-        Root<Product> resultProducts = query.from(Product.class);
+        Root<Product> products = query.from(Product.class);
+        Subquery<Double> subquery = query.subquery(Double.class);//<>define the returns  entity’s type
+        Root<Rating> ratings = subquery.from(Rating.class);
+        //Join<Project, Employee> sqEmp = project.join(Project_.employees); 为了得到rating.pid=pid 是否需要join
+        subquery.select(criteriaBuilder.avg(ratings.get(Rating_.value)))
+               // .where(criteriaBuilder.equal(ratings.get(Rating_.product),criteriaBuilder.parameter(Product.class,"Product") ));//为什么自动转成了Double类型
+                .where(criteriaBuilder.equal(ratings.get("product"),products))
         List<Predicate> predicatesList = new ArrayList<>();
         
         for(Object key : constraint.keySet()) {
@@ -232,22 +239,10 @@ public class JPAProductRepositoryImpl implements ProductRepository {
         TypedQuery<Product> q = entityManager.createQuery(query);
         List<Product> disorderProductList=q.getResultList();
         return disorderProductList;  
-        后面可以用   product.getRating 得到对应的rating 然后计算平均分
-        用HashMap存储，最后对value排序
+        //后面可以用   product.getRating 得到对应的rating 然后计算平均分
+        //用HashMap存储，最后对value排序
     }
-    public static boolean isEmpty(String str) {
-        int strLen;
-        if (str == null || (strLen = str.length()) == 0||str==" ") {
-            return true;
-        }
-        for (int i = 0; i < strLen; i++) {
-            if ((Character.isWhitespace(str.charAt(i)) == false)) {
-                return false;
-            }
-        }
-        return true;
-    }
-*/
+    
 /*
     public List<Product> findProductEntities(int maxResults, int firstResult) {
         return findProductEntities(false, maxResults, firstResult);
