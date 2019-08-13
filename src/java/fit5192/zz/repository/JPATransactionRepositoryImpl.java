@@ -184,7 +184,7 @@ public class JPATransactionRepositoryImpl implements TransactionRepository {
     @Override
     public List<Transaction_> SearchTransactionsByUserId(int userId) {
         EntityManager entityManager = this.entityManagerFactory.createEntityManager();
-        Query query = entityManager.createNamedQuery("Transaction.SearchTransactionsByUserId");
+        Query query = entityManager.createNamedQuery("Transaction_.SearchTransactionsByUserId");
         query.setParameter("userId", userId);
         return query.getResultList();
     }
