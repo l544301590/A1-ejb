@@ -22,11 +22,7 @@ import javax.persistence.EntityNotFoundException;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Subquery;
+
 
 /**
  *
@@ -142,30 +138,38 @@ public class JPAProductRepositoryImpl implements ProductRepository {
     @Override
     public List<Product> searchProductByAnyAttribute(Product product) {
         EntityManager entityManager = this.entityManagerFactory.createEntityManager();
-        StringBuilder query=new StringBuilder("SELECT p FROM product p WHERE 1");
+        StringBuilder query=new StringBuilder("SELECT p FROM Product p WHERE 1=1 ");
         if(product.getId()!=0){
-            query.append("AND p.id=:id");
+            query.append(" AND p.id=:id");
         }
-        if(isEmpty(product.getName())){
-            query.append("AND p.name=:name");
+        if(!isEmpty(product.getName())){
+            query.append(" AND p.name=:name");
         }
         if(product.getCategory()!=0){
-            query.append("AND p.category=:category");
+            query.append(" AND p.category=:category");
         }
-        if(isEmpty(product.getArea())){
-            query.append("AND p.area=:area");
+        if(!isEmpty(product.getArea())){
+            query.append(" AND p.area=:area");
         }
         if(product.getPrice()!=0){
-            query.append("AND p.price<:price");
+            query.append(" AND p.price<=:price");
         }
-        String orderQuery = "SELECT AVG(s.value) FROM Rating r WHERE r.product=p DESC";//这里的r.product=p 感觉不太对啊
-        String finalQuery = query.toString()+"ORDER BY"+orderQuery;
-        TypedQuery<Product> q = entityManager.createQuery(finalQuery, Product.class);         
-        q.setParameter("id", product.getId());
-        q.setParameter("name", product.getName());
-        q.setParameter("category", product.getCategory());
-        q.setParameter("area", product.getArea());
-        q.setParameter("price", product.getPrice());
+        String orderQuery = "SELECT AVG(r.value) FROM Rating r WHERE r.product.id=p.id";//这里的r.product=p 感觉不太对啊
+        String finalQuery = query.toString()+" ORDER BY "+"( "+orderQuery+" )";
+        //System.err.println("最终的查询语句"+finalQuery);
+        TypedQuery<Product> q = entityManager.createQuery(finalQuery, Product.class);
+        if(product.getId()!=0){
+        q.setParameter("id", product.getId());}
+        if(!isEmpty(product.getName())){
+        q.setParameter("name", product.getName());}
+        if(product.getCategory()!=0){
+        q.setParameter("category", product.getCategory());}
+        if(!isEmpty(product.getArea())){
+        q.setParameter("area", product.getArea());}
+        if(product.getPrice()!=0){
+        q.setParameter("price", product.getPrice());}
+//        System.out.println(q.toString());
+//        System.err.println(q.getResultList().toString());
         return q.getResultList();  
     }
     public static boolean isEmpty(String str) {
@@ -214,7 +218,17 @@ public class JPAProductRepositoryImpl implements ProductRepository {
         }
     }
 */   
-
-
+/*
+    @Override
+    public List<Product> searchTest() {
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
+        TypedQuery<Product> p =  entityManager.createQuery("SELECT p FROM Product p WHERE 1=1 AND p.category=1 ORDER BY (SELECT AVG(r.value) FROM Rating r WHERE r.product.id=p.id )", Product.class);         
+//        q.setParameter("firstname", firstname);    
+//        q.setParameter("surname", surname);
+        List<Product> resultList = p.getResultList();
+        System.err.println("有输出了吗？！！"+resultList.toString());
+        return p.getResultList();
+    }
+*/
 
 }
