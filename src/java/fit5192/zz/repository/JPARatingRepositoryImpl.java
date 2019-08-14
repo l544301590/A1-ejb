@@ -137,6 +137,14 @@ public class JPARatingRepositoryImpl implements RatingRepository {
         EntityManager entityManager = this.entityManagerFactory.createEntityManager();
         return entityManager.createNamedQuery("Rating.findAll").getResultList();
     }
+    
+    @Override
+    public List<Rating> searchRatingsByProductId(int productId) {
+        EntityManager entityManager = this.entityManagerFactory.createEntityManager();
+        Query query = entityManager.createNamedQuery("Rating.searchRatingByProductId");
+        query.setParameter("productId", productId);
+        return query.getResultList();
+    }
     /*
     @Override
     public Map<Product,Float> getAvgValueOfProduct(Product product) {
